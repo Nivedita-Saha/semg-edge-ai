@@ -1,0 +1,44 @@
+[
+  {
+    "accuracy": 74.12935323383084,
+    "size_kb": 79.8515625,
+    "latency_ms": 0.011833999451482669,
+    "name": "Baseline",
+    "params": 18545
+  },
+  {
+    "accuracy": 74.12935323383084,
+    "size_kb": 31.8046875,
+    "latency_ms": 0.0050415001169312745,
+    "name": "Baseline + int8",
+    "params": 18545
+  },
+  {
+    "accuracy": 75.45605306799337,
+    "size_kb": 80.140625,
+    "latency_ms": 0.011874999472638592,
+    "name": "Pruned (48%)",
+    "params": 18545
+  },
+  {
+    "accuracy": 75.62189054726367,
+    "size_kb": 32.09375,
+    "latency_ms": 0.005207999492995441,
+    "name": "Pruned + int8",
+    "params": 18545
+  },
+  {
+    "accuracy": 71.64179104477611,
+    "size_kb": 31.07421875,
+    "latency_ms": 0.00508299854118377,
+    "name": "Student (distilled)",
+    "params": 5697
+  },
+  {
+    "accuracy": 71.80762852404644,
+    "size_kb": 18.2734375,
+    "latency_ms": 0.002959000994451344,
+    "name": "Student + int8",
+    "params": 5697
+  }
+]
