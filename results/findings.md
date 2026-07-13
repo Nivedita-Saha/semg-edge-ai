@@ -269,3 +269,66 @@ performed. Distinguishing these is the natural next experiment.
 Myo armbands. This should be verified against the Ninapro documentation;
 if the layout differs, the roll would have scrambled channels arbitrarily
 rather than simulating rotation, and the experiment would need repeating.*
+
+---
+
+## Decomposing the gap, part 1: is it amplitude?
+
+If subjects differ simply in signal magnitude — muscle mass, adipose
+thickness, skin conductivity, band tightness — then every channel arrives
+at the model mis-scaled, and an intact gesture pattern could be
+unrecognisable. Three normalisation strategies were compared. **None uses
+subject 2's labels**, so all three are deployable: a device can ask a new
+user to wear the band and move briefly.
+
+| | Accuracy | vs baseline |
+|---|---|---|
+| Subject 1 (reference) | 74.13% | — |
+| A. Subject 1's statistics (baseline) | 27.62% | — |
+| B. Subject 2's own statistics | 30.80% | **+3.19 pp** |
+| C. Subject 2's REST statistics only | 13.84% | **-13.78 pp** |
+
+**Amplitude accounts for only ~7% of the 46.5 pp gap.** Recalibrating to
+subject 2's own statistics recovers 3.2 points and leaves 39 unexplained.
+Scaling is not the problem.
+
+### Calibrating on rest is actively harmful
+
+Strategy C — "put the band on and hold still for five seconds" — is the
+most practically deployable calibration imaginable, and it **halved**
+accuracy.
+
+The reason: **rest is not a quieter version of gesture.** With the muscles
+inactive, the resting signal is dominated by the noise floor — electronic
+noise, baseline muscle tone, skin impedance. Dividing by the standard
+deviation of *noise* does not rescale the gesture patterns; it amplifies
+whichever channels happened to be quietest at rest and suppresses those
+that were noisiest, distorting the spatial signature the model depends on.
+
+This is worth stating plainly because rest-based calibration is the obvious
+thing a practitioner would reach for. It should not be used.
+
+## Where this leaves the cross-subject problem
+
+Two candidate explanations have now been tested and rejected:
+
+| Hypothesis | Test | Result |
+|---|---|---|
+| **Armband rotation** | electrode-shift augmentation, 3 seeds | **Refuted** — -14.1 pp within-subject, -11.0 pp cross-subject |
+| **Amplitude scaling** | three normalisation strategies | **Refuted** — 7% of gap; rest-based calibration harmful |
+
+The gap is therefore **genuine spatial pattern mismatch**. Subject 2's
+gestures produce a differently-*shaped* signature across the electrodes —
+not a rotated one, and not a rescaled one. A different one.
+
+That points at two remaining candidates:
+
+- **Anatomy.** Different forearm geometry means a given electrode sits over
+  a genuinely different mixture of muscles, producing a pattern that is not
+  a transformation of subject 1's pattern but an unrelated one.
+- **Behaviour.** Subject 2 may simply perform the gestures differently —
+  different force, different finger involvement, different wrist angle.
+
+Distinguishing these is the natural next experiment, and neither is
+solvable by preprocessing. Both would require either learning across many
+subjects, or a small amount of labelled calibration data from the new user.
