@@ -106,3 +106,57 @@ established that the effect is real and positive.
   both train and test, silently inflating results. Splitting by repetition
   (train 1/3/4/6, val 2, test 5) prevents this. Normalisation statistics
   were computed from the training set alone.
+
+---
+
+# Interpretability — and why it matters for EnduRAI
+
+## What the model actually looks at
+
+SHAP attribution was computed for 136 test windows spanning all 17
+gestures. Two findings:
+
+**Each gesture recruits a distinct subset of electrodes.** The channel
+importance map shows no two gestures relying on the same pattern:
+gesture 3 depends almost entirely on channel 13, gesture 6 on channel 7,
+gestures 9 and 11 on channel 0, gestures 5/8/10 on channel 15. Had the
+model learned a shortcut — classifying on overall signal amplitude rather
+than muscle-specific patterns — every row would look identical. It does
+not. **The model has learned forearm physiology, not a proxy for it.**
+
+**The model uses timing, not just amplitude.** In the single-window
+attribution, channels 8 and 10 contribute throughout the 200 ms window,
+while channel 7 contributes sharply only in the first 20-35 ms. Gesture
+onset carries information, and the model exploits it.
+
+## Why this matters for a factory wearable
+
+EnduRAI is a human-centred project. Its subject is not a dataset — it is
+a worker, wearing a device on their arm, all shift.
+
+**Accuracy alone does not earn trust.** A device that silently classifies
+a person's muscle activity, and is right 75% of the time, is a device that
+is *wrong about that person's body once every four gestures*. If the
+worker cannot ask why, and cannot be told, they have no basis to accept it
+— and no basis to challenge it when it is wrong.
+
+Interpretability changes what can be said to that worker:
+
+- **"The system decided this because these two muscles fired, at this
+  moment."** That is a claim a person can evaluate, agree with, or dispute.
+- **When the model fails**, attribution shows whether it failed because
+  an electrode had shifted, or because the gesture was genuinely ambiguous.
+  The first is fixable by the worker; the second is not their fault.
+- **It makes the system auditable.** If a device's decisions feed into
+  safety systems, productivity monitoring, or ergonomic assessment, then
+  "the network said so" is not an acceptable answer to anyone — worker,
+  supervisor, or regulator.
+
+Compression makes such a device *possible*: an 18 KB model can run on the
+sensor itself, keeping a worker's raw muscle data on their own arm rather
+than streaming it to a server. Interpretability is what makes it
+*acceptable*. Both are necessary. Neither is sufficient alone.
+
+That combination — a model small enough to run on the body, and
+transparent enough to be questioned by the person wearing it — is what
+this project was built to demonstrate.
