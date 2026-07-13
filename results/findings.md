@@ -160,3 +160,72 @@ than streaming it to a server. Interpretability is what makes it
 That combination — a model small enough to run on the body, and
 transparent enough to be questioned by the person wearing it — is what
 this project was built to demonstrate.
+
+---
+
+# Cross-subject robustness — the real problem
+
+The baseline model, trained entirely on subject 1, was applied unchanged
+to subject 2 (same armband, same 17 gestures, never seen in training).
+Normalisation used subject 1's statistics, as a deployed model would have
+to — it cannot see a new user's data in advance.
+
+| | Accuracy |
+|---|---|
+| Subject 1 (trained on) | 74.13% |
+| Subject 2 (never seen) | **27.62%** |
+| Chance | 5.88% |
+
+**A 46.5 percentage point collapse.** The model remains above chance, so
+some structure transfers — but it is nowhere near deployable on a new user.
+
+## The failure is bimodal, not uniform
+
+Per-gesture accuracy on subject 2 splits sharply:
+
+**Transferred:** gesture 3 (90.7%), gesture 1 (79.4%), gesture 11 (74.0%),
+gesture 6 (51.9%), gesture 13 (37.2%)
+
+**Collapsed:** gesture 2 (0.0%), gesture 7 (0.7%), gesture 9 (2.2%),
+gesture 10 (2.5%), gesture 8 (2.6%), gesture 15 (1.8%)
+
+The model does not degrade gracefully. It either recognises a gesture
+almost as well as on the training subject, or it fails completely.
+
+## A mechanism, from the interpretability analysis
+
+Cross-referencing against the SHAP channel importance map suggests why.
+
+**The gestures that transferred are those whose SHAP attribution was
+concentrated on one or two dominant electrodes.** Gesture 3 depended
+almost entirely on channel 13; gesture 11 on channel 0. The gestures that
+collapsed relied on distributed patterns across many channels.
+
+The proposed mechanism: **a single strong, localised muscle activation
+survives armband rotation, because a small rotation still leaves a
+neighbouring electrode observing a similar signal. A distributed spatial
+pattern does not survive, because the entire spatial arrangement is
+scrambled by the rotation.** The model has learned subject 1's specific
+electrode-to-muscle mapping, and that mapping does not hold on a
+different arm.
+
+This is why the confusion matrix shows several true gestures being dumped
+into predicted class 11: when the learned spatial pattern is lost, the
+model falls back on whichever channel still resembles something familiar.
+
+## Why this matters
+
+Cross-subject generalisation is the central unsolved problem in wearable
+sEMG, and the reason commercial gesture-control devices have repeatedly
+failed in the field. A device that must be recalibrated for every user,
+and re-calibrated again if the armband is put on slightly differently the
+next morning, is not a product.
+
+**Future work** would target this directly: subject-independent training
+across many users, domain adaptation, electrode-shift augmentation during
+training, or rotation-invariant architectures that do not assume a fixed
+electrode-to-muscle mapping. The interpretability finding above suggests
+a specific hypothesis worth testing — that encouraging the model toward
+sparser, more localised channel attribution during training might
+*improve* cross-subject robustness, at some cost to within-subject
+accuracy.
