@@ -332,3 +332,80 @@ That points at two remaining candidates:
 Distinguishing these is the natural next experiment, and neither is
 solvable by preprocessing. Both would require either learning across many
 subjects, or a small amount of labelled calibration data from the new user.
+
+---
+
+## Decomposing the gap, part 2: is there a correctable rotation offset?
+
+Electrode-shift augmentation failed because it *destroyed* electrode-identity
+information. Alignment tests the opposite treatment: assume electrode
+identity matters, and try to *recover* the correct mapping on a new arm.
+Subject 2 performs one reference gesture; the offset is estimated from
+which electrode fires hardest, and their channels are rolled to match.
+
+We also brute-forced **all 8 possible rotations** to establish the oracle
+upper bound — the ceiling on what any alignment method could achieve.
+
+| Rotation | Accuracy |
+|---|---|
+| **shift 0 (no correction)** | **27.62%** |
+| shift 1 | 12.41% |
+| shift 2 | 6.13% |
+| shift 3 | 4.71% |
+| shift 4 | 4.74% |
+| shift 5 | 6.25% |
+| shift 6 | 6.59% |
+| shift 7 (estimated offset) | 10.00% |
+
+Chance is 5.88%.
+
+**The oracle best rotation is shift 0 — doing nothing.** Accuracy falls
+monotonically as the band is rotated away from zero, bottoms out below
+chance at 3-4 positions (a half-turn, maximally misaligned), and recovers
+as it wraps back. This is the signature of a system that is *already
+correctly aligned*. There is no offset to correct, and **no rotation
+correction, however estimated, can help — the ceiling on the entire
+approach is zero.**
+
+### Why the one-gesture estimator failed
+
+Subject 1's reference gesture peaks on electrode 7; subject 2's peaks on
+electrode 0. The estimator inferred a 7-position rotation and cost 17.6
+percentage points.
+
+But electrodes 7 and 0 are **adjacent** on an 8-electrode ring. The two
+subjects are not rotated relative to each other. They simply recruit
+**slightly different muscles for the same intended gesture** — the peak
+lands one electrode over because their forearms are different.
+
+The estimator mistook anatomical variation for rotation. Which is exactly
+what the cross-subject problem turns out to be.
+
+## Conclusion: three refutations
+
+| Hypothesis | Test | Result |
+|---|---|---|
+| Rotation (make model ignore it) | electrode-shift augmentation, 3 seeds | **Refuted** — -14.1 pp within, -11.0 pp cross |
+| Amplitude scaling | three normalisation strategies | **Refuted** — 7% of gap; rest-calibration harmful |
+| Rotation (correct it) | oracle over all 8 shifts | **Refuted** — ceiling is zero |
+
+**The cross-subject gap is not a geometric or scaling problem. It is
+anatomical and behavioural.** Subject 2's forearm produces a genuinely
+different spatial signature for the same intended gesture. No preprocessing
+transformation can map one onto the other, because no such transformation
+exists — these are different signals, not distorted versions of the same
+signal.
+
+This has a clear consequence for what *would* work, and it is the honest
+conclusion of this project:
+
+- **Preprocessing and augmentation cannot solve this.** Three attempts,
+  three refutations.
+- **Multi-subject training** must learn a distribution over anatomies
+  rather than a single mapping — and should be expected to help only
+  partially, for the same reason.
+- **A small amount of labelled calibration data from the new user** —
+  a few seconds per gesture — remains the only intervention with a clear
+  mechanism. It does not solve the scientific problem; it moves the cost
+  onto the user. That is what every commercial device does, and now we
+  understand why.
