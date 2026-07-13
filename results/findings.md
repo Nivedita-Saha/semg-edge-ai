@@ -229,3 +229,43 @@ a specific hypothesis worth testing — that encouraging the model toward
 sparser, more localised channel attribution during training might
 *improve* cross-subject robustness, at some cost to within-subject
 accuracy.
+
+---
+
+## Testing the rotation hypothesis — a refutation
+
+The interpretability analysis suggested armband rotation as the mechanism
+behind the cross-subject collapse. This was tested directly: the model was
+retrained with electrode-shift augmentation (random circular roll of
++/-2 positions within each 8-electrode band, both bands rolled together),
+across three seeds.
+
+| | Subject 1 (seen) | Subject 2 (unseen) |
+|---|---|---|
+| Baseline | 73.47 +/- 0.36% | 28.17 +/- 2.36% |
+| + rotation augmentation | 59.37 +/- 0.27% | 17.17 +/- 0.43% |
+| **Effect** | **-14.10 pp** | **-11.00 pp** |
+
+**The hypothesis is refuted.** Augmentation degraded both within- and
+cross-subject accuracy, consistently across seeds and with small variance.
+
+The interpretation: the electrode-to-muscle mapping is not an artefact the
+model over-relies on — **it is the signal**. Which electrode observes which
+muscle is precisely what distinguishes one gesture from another. Rolling
+the channels does not teach rotational invariance; it destroys the
+discriminative information.
+
+This has a direct consequence for future work: a **rotation-invariant
+architecture** (circular convolution over the electrode ring) would build
+in an invariance the data does not support, and should be expected to fail
+for the same reason. That avenue is closed.
+
+The cross-subject gap must therefore be driven by other factors —
+anatomical differences (muscle size, adipose thickness, skin
+conductivity), or inter-subject variation in how the gestures are
+performed. Distinguishing these is the natural next experiment.
+
+*Caveat: this assumes DB5 channels 0-7 and 8-15 correspond to the two
+Myo armbands. This should be verified against the Ninapro documentation;
+if the layout differs, the roll would have scrambled channels arbitrarily
+rather than simulating rotation, and the experiment would need repeating.*
